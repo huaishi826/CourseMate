@@ -1,0 +1,26 @@
+# CourseMate 閰嶇疆鏂囦欢
+pipeline:
+  steps:
+    - document_parser
+    - structure_analyzer
+    - concept_extractor
+    - knowledge_graph
+    - note_generator
+    - quiz_generator
+
+llm:
+  provider: deepseek
+  model: deepseek-chat
+  temperature: 0.3
+  max_tokens_per_step: 4096
+
+output:
+  formats:
+    - markdown    # 绗旇
+    - json         # 涔犻
+  include_analysis: true
+  include_mindmap: true
+
+tracking:
+  log_tokens: true
+  log_time: true
