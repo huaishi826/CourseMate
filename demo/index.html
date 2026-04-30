@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourseMate 鈥?AI璇句欢鏅鸿兘澶勭悊婕旂ず</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080b11;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: #1e2d45;
+            --text: #f1f5f9;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --blue: #3b82f6;
+            --blue-glow: rgba(59,130,246,0.15);
+            --green: #22c55e;
+            --green-glow: rgba(34,197,94,0.15);
+            --purple: #8b5cf6;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --cyan: #06b6d4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Subtle grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(59,130,246,0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 60%, rgba(139,92,246,0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+        }
+
+        .logo-text h1 {
+            font-size: 22px; font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .logo-text span {
+            font-size: 12px; color: var(--text3);
+        }
+
+        .badge {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.25);
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 500; color: var(--green);
+        }
+        .badge .dot {
+            width: 7px; height: 7px; background: var(--green);
+            border-radius: 50%; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* Stats row */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .stat-card:hover { border-color: var(--blue); }
+
+        .stat-label {
+            font-size: 11px; color: var(--text3);
+            text-transform: uppercase; letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 26px; font-weight: 700;
+        }
+
+        .stat-sub {
+            font-size: 11px; color: var(--text3);
+            margin-top: 4px;
+        }
+
+        .stat-sub.good { color: var(--green); }
+
+        /* Main layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+        }
+
+        /* Panel */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .panel-title {
+            font-size: 15px; font-weight: 600;
+        }
+
+        .panel-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: var(--green);
+        }
+
+        .panel-body {
+            padding: 20px 22px;
+        }
+
+        /* Pipeline */
+        .pipeline-steps {
+            display: flex; flex-direction: column; gap: 2px;
+        }
+
+        .step-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 18px;
+            background: var(--surface2);
+            border-radius: 10px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            animation: fadeIn 0.4s ease both;
+        }
+
+        .step-row.completed { border-left-color: var(--green); }
+        .step-row.active { 
+            border-left-color: var(--blue);
+            box-shadow: 0 0 20px var(--blue-glow);
+        }
+        .step-row.pending { opacity: 0.45; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .step-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+            background: var(--surface);
+        }
+        .step-row.completed .step-icon { background: var(--green-glow); }
+        .step-row.active .step-icon { background: var(--blue-glow); }
+
+        .step-info { flex: 1; }
+        .step-name { font-size: 13px; font-weight: 600; }
+        .step-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+        .step-tokens {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--purple);
+            font-weight: 500; white-space: nowrap;
+        }
+
+        .step-status {
+            font-size: 11px; font-weight: 500;
+            padding: 3px 10px; border-radius: 10px;
+        }
+        .step-status.done { background: var(--green-glow); color: var(--green); }
+        .step-status.running { background: var(--blue-glow); color: var(--blue); }
+        .step-status.wait { background: transparent; color: var(--text3); }
+
+        /* Upload Area */
+        .upload-area {
+            background: var(--surface2);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover { border-color: var(--blue); }
+
+        .upload-area .file-icon { font-size: 36px; margin-bottom: 8px; }
+        .upload-area .file-name { font-size: 14px; font-weight: 600; }
+        .upload-area .file-meta { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: #fff; border: none; border-radius: 10px;
+            font-family: 'Inter', sans-serif; font-weight: 600;
+            font-size: 14px; cursor: pointer;
+            transition: all 0.3s;
+            width: 100%; justify-content: center;
+        }
+
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px var(--blue-glow); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* Right panel - Output */
+        .output-tabs {
+            display: flex; gap: 2px;
+            border-bottom: 1px solid var(--border);
+            padding: 0 22px;
+        }
+
+        .output-tab {
+            padding: 10px 16px;
+            font-size: 12px; font-weight: 500; color: var(--text3);
+            border: none; background: none; cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .output-tab.active {
+            color: var(--text);
+            border-bottom-color: var(--blue);
+        }
+
+        .output-content {
+            max-height: 550px; overflow-y: auto;
+            padding: 16px 22px;
+        }
+
+        /* Notes styling */
+        .notes-content { font-size: 13px; line-height: 1.8; }
+        .notes-content h2 { font-size: 16px; margin: 16px 0 8px; color: var(--blue); }
+        .notes-content h3 { font-size: 14px; margin: 12px 0 6px; }
+        .notes-content ul { padding-left: 18px; }
+        .notes-content li { margin: 4px 0; }
+        .notes-content code {
+            background: var(--surface2); padding: 1px 6px;
+            border-radius: 4px; font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .notes-content table {
+            width: 100%; border-collapse: collapse;
+            margin: 12px 0; font-size: 12px;
+        }
+        .notes-content th, .notes-content td {
+            padding: 8px 12px; text-align: left;
+            border: 1px solid var(--border);
+        }
+        .notes-content th { background: var(--surface2); font-weight: 600; }
+        .notes-content blockquote {
+            border-left: 3px solid var(--orange);
+            padding: 8px 14px; margin: 10px 0;
+            background: rgba(245,158,11,0.06);
+            font-style: italic; font-size: 12px;
+        }
+
+        /* Quiz styling */
+        .quiz-item {
+            background: var(--surface2);
+            border-radius: 10px; padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .quiz-type {
+            font-size: 10px; color: var(--text3);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .quiz-question {
+            font-size: 13px; font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .quiz-option {
+            padding: 8px 12px; margin: 4px 0;
+            background: var(--surface); border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid transparent;
+        }
+
+        .quiz-option.correct {
+            border-color: var(--green);
+            background: var(--green-glow);
+        }
+
+        .quiz-analysis {
+            margin-top: 10px; padding: 10px 14px;
+            background: rgba(139,92,246,0.06);
+            border-radius: 8px; font-size: 12px;
+            color: var(--purple);
+        }
+
+        /* Knowledge graph mini */
+        .kg-container {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            justify-content: center; padding: 20px 0;
+        }
+
+        .kg-node {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 8px 14px; border-radius: 8px;
+            font-size: 12px; font-weight: 500;
+        }
+        .kg-node.root {
+            border-color: var(--blue);
+            box-shadow: 0 0 12px var(--blue-glow);
+        }
+
+        .kg-edge {
+            color: var(--text3); font-size: 10px;
+            display: flex; align-items: center;
+        }
+
+        /* Token summary */
+        .token-summary {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin-top: 16px;
+        }
+
+        .token-item {
+            background: var(--surface2);
+            padding: 12px 14px; border-radius: 8px;
+        }
+        .token-item .label {
+            font-size: 11px; color: var(--text3);
+        }
+        .token-item .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px; font-weight: 700; color: var(--purple);
+            margin-top: 4px;
+        }
+
+        .spinner {
+            display: inline-block; width: 14px; height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        @media (max-width: 1000px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-area">
+                <div class="logo-icon">馃摎</div>
+                <div class="logo-text">
+                    <h1>CourseMate</h1>
+                    <span>AI璇句欢鏅鸿兘澶勭悊绠＄嚎 路 v1.0.0</span>
+                </div>
+            </div>
+            <div class="badge">
+                <span class="dot"></span>DeepSeek API 宸茶繛鎺?            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">绱澶勭悊璇句欢</div>
+                <div class="stat-value">67</div>
+                <div class="stat-sub">瑕嗙洊4闂ㄨ绋?/div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">鐢熸垚缁冧範棰?/div>
+                <div class="stat-value">435</div>
+                <div class="stat-sub good">鍚缁嗚В鏋?/div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">绱Token娑堣€?/div>
+                <div class="stat-value">152涓?</div>
+                <div class="stat-sub">DeepSeek V3</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">澶嶄範鏁堢巼鎻愬崌</div>
+                <div class="stat-value">70%</div>
+                <div class="stat-sub good">鑺傜渷绾?2灏忔椂</div>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="main-grid">
+            <!-- Left: Pipeline -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">鈿?璇句欢澶勭悊绠＄嚎</span>
+                    <span class="panel-badge" id="liveStatus">鈼?灏辩华</span>
+                </div>
+
+                <div class="panel-body">
+                    <!-- File upload -->
+                    <div class="upload-area" id="uploadArea">
+                        <div class="file-icon">馃搫</div>
+                        <div class="file-name">绗?绔?浜屽弶鏍?pdf</div>
+                        <div class="file-meta">42椤?路 1.8MB 路 鏁版嵁缁撴瀯璇剧▼</div>
+                    </div>
+
+                    <button class="btn" id="startBtn" onclick="startPipeline()">
+                        鈻?寮€濮嬫櫤鑳藉鐞?                    </button>
+
+                    <!-- Pipeline Steps -->
+                    <div class="pipeline-steps" id="pipelineSteps" style="margin-top:20px">
+                        <div class="step-row pending" data-step="1">
+                            <div class="step-icon">馃搫</div>
+                            <div class="step-info">
+                                <div class="step-name">1. 鏂囨。瑙ｆ瀽</div>
+                                <div class="step-desc">PDF鏂囨湰鎻愬彇 + 鍥捐〃OCR</div>
+                            </div>
+                            <div class="step-tokens">鈥?/div>
+                            <div class="step-status wait">绛夊緟</div>
+                        </div>
+
+                        <div class="step-row pending" data-step="2">
+                            <div class="step-icon">馃彈锔?/div>
+                            <div class="step-info">
+                                <div class="step-name">2. 绔犺妭缁撴瀯璇嗗埆</div>
+                                <div class="step-desc">绔犺妭杈圭晫妫€娴?+ 灞傜骇鎺ㄧ悊</div>
+                            </div>
+                            <div class="step-tokens">鈥?/div>
+                            <div class="step-status wait">绛夊緟</div>
+                        </div>
+
+                        <div class="step-row pending" data-step="3">
+                            <div class="step-icon">馃攳</div>
+                            <div class="step-info">
+                                <div class="step-name">3. 鍏抽敭姒傚康鎻愬彇</div>
+                                <div class="step-desc">鏈璇嗗埆 + 瀹氫箟褰掔撼 + 鍏紡鐞嗚В</div>
+                            </div>
+                            <div class="step-tokens">鈥?/div>
+                            <div class="step-status wait">绛夊緟</div>
+                        </div>
+
+                        <div class="step-row pending" data-step="4">
+                            <div class="step-icon">馃敆</div>
+                            <div class="step-info">
+                                <div class="step-name">4. 鐭ヨ瘑鍏宠仈鏋勫缓</div>
+                                <div class="step-desc">璺ㄧ珷鑺傚叧鑱?+ 鍓嶇疆渚濊禆鎺ㄦ柇</div>
+                            </div>
+                            <div class="step-tokens">鈥?/div>
+                            <div class="step-status wait">绛夊緟</div>
+                        </div>
+
+                        <div class="step-row pending" data-step="5">
+                            <div class="step-icon">鉁嶏笍</div>
+                            <div class="step-info">
+                                <div class="step-name">5. 缁撴瀯鍖栫瑪璁扮敓鎴?/div>
+                                <div class="step-desc">妗嗘灦鐢熸垚 + 璇︾粏灞曞紑 + 鏄撻敊鎻愮ず</div>
+                            </div>
+                            <div class="step-tokens">鈥?/div>
+                            <div class="step-status wait">绛夊緟</div>
+                        </div>
+
+                        <div class="step-row pending" data-step="6">
+                            <div class="step-icon">馃И</div>
+                            <div class="step-info">
+                                <div class="step-name">6. 缁冧範棰樼洰鐢熸垚</div>
+                                <div class="step-desc">閫夋嫨棰?+ 绠€绛?+ 缂栫爜棰?+ 瑙ｆ瀽</div>
+                            </div>
+                            <div class="step-tokens">鈥?/div>
+                            <div class="step-status wait">绛夊緟</div>
+                        </div>
+
+                        <div class="step-row pending" data-step="7">
+                            <div class="step-icon">鉁?/div>
+                            <div class="step-info">
+                                <div class="step-name">7. 杈撳嚭姹囨€?/div>
+                                <div class="step-desc">绗旇瀵煎嚭 + 涔犻JSON + 鎬荤粨</div>
+                            </div>
+                            <div class="step-tokens">鈥?/div>
+                            <div class="step-status wait">绛夊緟</div>
+                        </div>
+                    </div>
+
+                    <!-- Token Summary -->
+                    <div class="token-summary" style="margin-top:20px">
+                        <div class="token-item">
+                            <div class="label">鏈娑堣€?/div>
+                            <div class="value" id="totalTokens">鈥?/div>
+                        </div>
+                        <div class="token-item">
+                            <div class="label">澶勭悊鑰楁椂</div>
+                            <div class="value" id="totalTime">鈥?/div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Output -->
+            <div class="panel">
+                <div class="output-tabs">
+                    <button class="output-tab active" onclick="switchTab('notes')">馃摑 绗旇</button>
+                    <button class="output-tab" onclick="switchTab('quiz')">馃И 涔犻</button>
+                    <button class="output-tab" onclick="switchTab('graph')">馃敆 鐭ヨ瘑鍥捐氨</button>
+                </div>
+                <div class="output-content" id="outputContent">
+                    <p style="color:var(--text3); text-align:center; padding:60px 0">
+                        鐐瑰嚮"寮€濮嬫櫤鑳藉鐞?鏌ョ湅缁撴灉
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            { name: "鏂囨。瑙ｆ瀽", desc: "PDF鏂囨湰鎻愬彇 + 鍥捐〃OCR", tokens: 4000 },
+            { name: "绔犺妭缁撴瀯璇嗗埆", desc: "绔犺妭杈圭晫妫€娴?+ 灞傜骇鎺ㄧ悊", tokens: 3600 },
+            { name: "鍏抽敭姒傚康鎻愬彇", desc: "鏈璇嗗埆 + 瀹氫箟褰掔撼 + 鍏紡鐞嗚В", tokens: 5700 },
+            { name: "鐭ヨ瘑鍏宠仈鏋勫缓", desc: "璺ㄧ珷鑺傚叧鑱?+ 鍓嶇疆渚濊禆鎺ㄦ柇", tokens: 6200 },
+            { name: "缁撴瀯鍖栫瑪璁扮敓鎴?, desc: "妗嗘灦鐢熸垚 + 璇︾粏灞曞紑 + 鏄撻敊鎻愮ず", tokens: 9700 },
+            { name: "缁冧範棰樼洰鐢熸垚", desc: "閫夋嫨棰?+ 绠€绛?+ 缂栫爜棰?+ 瑙ｆ瀽", tokens: 8000 },
+            { name: "杈撳嚭姹囨€?, desc: "绗旇瀵煎嚭 + 涔犻JSON + 鎬荤粨", tokens: 1200 },
+        ];
+
+        const icons = ["馃搫", "馃彈锔?, "馃攳", "馃敆", "鉁嶏笍", "馃И", "鉁?];
+
+        function startPipeline() {
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.textContent = '鈴?澶勭悊涓?..';
+            document.getElementById('liveStatus').textContent = '鈼?杩愯涓?;
+            document.getElementById('liveStatus').style.color = 'var(--blue)';
+
+            const stepRows = document.querySelectorAll('.step-row');
+            stepRows.forEach(r => {
+                r.className = 'step-row pending';
+                r.querySelector('.step-tokens').textContent = '鈥?;
+                r.querySelector('.step-status').textContent = '绛夊緟';
+                r.querySelector('.step-status').className = 'step-status wait';
+            });
+
+            let totalTokens = 0;
+            let currentStep = 0;
+
+            function runStep(index) {
+                if (index >= steps.length) {
+                    // All done
+                    document.getElementById('liveStatus').textContent = '鈼?瀹屾垚';
+                    document.getElementById('liveStatus').style.color = 'var(--green)';
+                    btn.textContent = '鉁?澶勭悊瀹屾垚';
+                    document.getElementById('totalTokens').textContent = totalTokens.toLocaleString();
+                    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                    document.getElementById('totalTime').textContent = elapsed + 's';
+                    switchTab('notes');
+                    return;
+                }
+
+                const row = stepRows[index];
+                const step = steps[index];
+
+                // Set active
+                row.className = 'step-row active';
+                row.querySelector('.step-icon').textContent = icons[index];
+                row.querySelector('.step-tokens').textContent = '澶勭悊涓?..';
+                row.querySelector('.step-status').textContent = '杩愯';
+                row.querySelector('.step-status').className = 'step-status running';
+
+                // Simulate processing
+                const delay = 600 + Math.random() * 900;
+                setTimeout(() => {
+                    totalTokens += step.tokens;
+                    row.className = 'step-row completed';
+                    row.querySelector('.step-tokens').textContent = '+' + step.tokens.toLocaleString();
+                    row.querySelector('.step-status').textContent = '瀹屾垚';
+                    row.querySelector('.step-status').className = 'step-status done';
+                    document.getElementById('totalTokens').textContent = totalTokens.toLocaleString();
+                    runStep(index + 1);
+                }, delay);
+            }
+
+            const startTime = performance.now();
+            runStep(0);
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const content = document.getElementById('outputContent');
+
+            if (tab === 'notes') {
+                content.innerHTML = `<div class="notes-content">
+<h2>馃摎 绗洓绔?浜屽弶鏍?鈥?AI鐢熸垚绗旇</h2>
+
+<h3>4.1 浜屽弶鏍戞杩?/h3>
+<ul>
+<li><strong>浜屽弶鏍?/strong>锛氭瘡涓妭鐐规渶澶氭湁涓や釜瀛愯妭鐐圭殑鏍戝舰缁撴瀯</li>
+<li><strong>婊′簩鍙夋爲</strong>锛氭墍鏈夊彾瀛愯妭鐐瑰湪鍚屼竴灞傦紝闈炲彾瀛愯妭鐐瑰害鍧囦负2</li>
+<li><strong>瀹屽叏浜屽弶鏍?/strong>锛氶櫎鏈€鍚庝竴灞傚鍏ㄦ弧锛屾渶鍚庝竴灞傝妭鐐归潬宸︽帓鍒?/li>
+</ul>
+<blockquote>鈿狅笍 鏄撴贩娣嗭細婊′簩鍙夋爲 鈯?瀹屽叏浜屽弶鏍戯紝鍙嶄箣涓嶆垚绔嬨€傚弽渚嬶細娣卞害3鐨?鑺傜偣鏍戞槸瀹屽叏浣嗛潪婊?/blockquote>
+
+<h3>4.2 浜屽弶鏍戠殑閬嶅巻</h3>
+<table>
+<tr><th>閬嶅巻鏂瑰紡</th><th>椤哄簭</th><th>閫掑綊妯℃澘</th></tr>
+<tr><td><code>鍓嶅簭 NLR</code></td><td>鏍光啋宸︹啋鍙?/td><td>visit(root); dfs(L); dfs(R)</td></tr>
+<tr><td><code>涓簭 LNR</code></td><td>宸︹啋鏍光啋鍙?/td><td>dfs(L); visit(root); dfs(R)</td></tr>
+<tr><td><code>鍚庡簭 LRN</code></td><td>宸︹啋鍙斥啋鏍?/td><td>dfs(L); dfs(R); visit(root)</td></tr>
+<tr><td><code>灞傚簭 BFS</code></td><td>閫愬眰</td><td>queue.push(root) + while</td></tr>
+</table>
+<blockquote>馃挕 鍏抽敭鎶€宸э細BST鐨勪腑搴忛亶鍘?= 鍗囧簭搴忓垪銆傝繖鏄垽鏂瑽ST鐨勫父鐢ㄦ柟娉?/blockquote>
+
+<h3>4.3 浜屽弶鎼滅储鏍?(BST)</h3>
+<ul>
+<li><strong>瀹氫箟</strong>锛氬乏瀛愭爲鎵€鏈夊€?&lt; 鏍?&lt; 鍙冲瓙鏍戞墍鏈夊€?/li>
+<li><strong>鎻掑叆 O(h)</strong>锛氶€掑綊姣旇緝鍚庡畾浣嶇┖浣嶆彃鍏?/li>
+<li><strong>鍒犻櫎 O(h)</strong>锛氬垎涓夌鎯呭喌</li>
+</ul>
+<table>
+<tr><th>鎯呭喌</th><th>绛栫暐</th></tr>
+<tr><td>鍙跺瓙鑺傜偣</td><td>鐩存帴鍒犻櫎</td></tr>
+<tr><td>鍗曞瓙鑺傜偣</td><td>瀛愯妭鐐规浛浠ｇ埗鑺傜偣</td></tr>
+<tr><td>鍙屽瓙鑺傜偣</td><td>鎵句腑搴忓悗缁э紙鍙冲瓙鏍戞渶灏忥級鏇挎崲</td></tr>
+</table>
+
+<h3>4.4 骞宠　浜屽弶鏍?(AVL)</h3>
+<ul>
+<li><strong>骞宠　鍥犲瓙</strong> = 宸﹀瓙鏍戦珮搴?- 鍙冲瓙鏍戦珮搴?鈭?[-1, 0, 1]</li>
+<li><strong>鍥涚鏃嬭浆</strong>锛歀L(鍙虫棆) 路 RR(宸︽棆) 路 LR(宸?鍙? 路 RL(鍙?宸?</li>
+</ul>
+<blockquote>馃 璁板繂鎶€宸э細鐪嬫彃鍏ヨ矾寰勭殑褰㈢姸 鈫?L褰㈠氨鏄疞L锛孼褰㈠氨鏄疞R锛岄暅鍍忓悓鐞?/blockquote>
+
+<h3>馃敆 鐭ヨ瘑鍏宠仈鎻愮ず</h3>
+<ul>
+<li>渚濊禆 <strong>绗?绔犮€屾爤涓庨槦鍒椼€?/strong>锛堝眰搴忛亶鍘嗙敤闃熷垪锛岄潪閫掑綊閬嶅巻鐢ㄦ爤锛?/li>
+<li>涓?<strong>绗?绔犮€屽浘銆?/strong> 鎵撳熀纭€锛圖FS/BFS鐨勬硾鍖栵級</li>
+<li>涓?<strong>鍒嗘不绠楁硶</strong> 鎬濇兂涓€鑴夌浉鎵匡紙鏍戠殑閫掑綊鏈川锛?/li>
+</ul>
+</div>`;
+            } else if (tab === 'quiz') {
+                content.innerHTML = `
+<div class="quiz-item">
+    <div class="quiz-type">鍗曢€夐 路 BST閬嶅巻</div>
+    <div class="quiz-question">瀵逛互涓婤ST杩涜涓簭閬嶅巻锛屽緱鍒扮殑搴忓垪鏄紵锛堟爲: [4,2,6,1,3,5,7]锛?/div>
+    <div class="quiz-option correct">鉁?B. 1,2,3,4,5,6,7</div>
+    <div class="quiz-option">A. 4,2,1,3,6,5,7 鈥?杩欐槸鍓嶅簭閬嶅巻</div>
+    <div class="quiz-option">C. 1,3,2,5,7,6,4 鈥?杩欐槸鍚庡簭閬嶅巻</div>
+    <div class="quiz-option">D. 4,2,6,1,3,5,7 鈥?杩欐槸灞傚簭閬嶅巻</div>
+    <div class="quiz-analysis">馃挕 BST鐨勪腑搴忛亶鍘嗗緱鍒板崌搴忓簭鍒椼€侺NR椤哄簭璁块棶鍗冲緱1,2,3,4,5,6,7銆傛棰樺悓鏃跺府浣犲涔犱簡鍥涚閬嶅巻鐨勫尯鍒€?/div>
+</div>
+
+<div class="quiz-item">
+    <div class="quiz-type">鍗曢€夐 路 AVL鏃嬭浆</div>
+    <div class="quiz-question">AVL鏍戞彃鍏ュ悗鏌愯妭鐐瑰钩琛″洜瀛?-2锛屽叾鍙冲瓙骞宠　鍥犲瓙=-1锛屽簲鍋氫粈涔堟搷浣滐紵</div>
+    <div class="quiz-option correct">鉁?C. RR鏃嬭浆(宸︽棆)</div>
+    <div class="quiz-option">A. LL鏃嬭浆 鈥?骞宠　鍥犲瓙搴斾负+2/+1</div>
+    <div class="quiz-option">B. LR鏃嬭浆 鈥?鍙冲瓙搴斾负+1</div>
+    <div class="quiz-option">D. RL鏃嬭浆 鈥?鍙冲瓙搴斾负+1</div>
+    <div class="quiz-analysis">馃挕 -2(鍙抽噸) + -1(鍙冲瓙涔熷彸閲? = RR鍨嬨€傚彛璇€锛氬悓鍙峰崟鏃嬶紝寮傚彿鍙屾棆銆俁R鍙渶涓€娆″乏鏃嬨€?/div>
+</div>
+
+<div class="quiz-item">
+    <div class="quiz-type">鍒ゆ柇棰?/div>
+    <div class="quiz-question">"瀹屽叏浜屽弶鏍戜竴瀹氭槸婊′簩鍙夋爲銆?</div>
+    <div class="quiz-option">鉂?閿欒</div>
+    <div class="quiz-analysis">馃挕 瀹屽叏浜屽弶鏍戝彧瑕佹眰鏈€鍚庝竴灞傞潬宸︼紝涓嶈姹傚叏婊°€傛繁搴?鐨勫畬鍏ㄤ簩鍙夋爲鍙互鏈?涓妭鐐癸紝浣嗘繁搴?鐨勬弧浜屽弶鏍戝繀椤绘湁7涓妭鐐广€?/div>
+</div>
+
+<div class="quiz-item">
+    <div class="quiz-type">绠€绛旈</div>
+    <div class="quiz-question">绠€杩癇ST鍒犻櫎鍙屽瓙鑺傜偣鐨勮繃绋嬶紝骞惰鏄庢椂闂村鏉傚害銆?/div>
+    <div class="quiz-analysis">馃挕 鏍囧噯绛旀锛氭壘鍒板緟鍒犻櫎鑺傜偣鐨?strong>涓簭鍚庣户</strong>锛堝彸瀛愭爲鏈€灏忚妭鐐癸級锛岀敤鍚庣户鐨勫€兼浛鎹㈠緟鍒犻櫎鑺傜偣锛屽啀鍒犻櫎鍚庣户锛堝悗缁ф渶澶氫竴涓彸瀛愶紝鍙樹负鍗曞瓙/鍙跺瓙鍒犻櫎锛夈€傛椂闂村鏉傚害 O(h)锛宧涓烘爲楂樸€?/div>
+</div>
+
+<div class="quiz-item">
+    <div class="quiz-type">缂栫爜棰?/div>
+    <div class="quiz-question">瀹炵幇浜屽弶鏍戠殑鍓嶅簭閬嶅巻锛屽垎鍒粰鍑洪€掑綊鍜岄潪閫掑綊涓ょ瑙ｆ硶銆?/div>
+    <div class="quiz-analysis">馃挕 <strong>閫掑綊</strong>: def preorder(root): if not root: return; print(root.val); preorder(root.left); preorder(root.right)<br><strong>闈為€掑綊(鏍?</strong>: def preorder_iter(root): stack=[root]; while stack: node=stack.pop(); if node: print(node.val); stack.append(node.right); stack.append(node.left)<br>鎶€宸э細鏍堝厛鍘嬪彸鍐嶅帇宸︼紝淇濊瘉鍑烘爤鏃跺乏鍏堝鐞嗐€?/div>
+</div>`;
+            } else if (tab === 'graph') {
+                content.innerHTML = `
+<div style="text-align:center;padding:10px 0;color:var(--text3);font-size:12px">
+    鍩轰簬14涓蹇垫彁鍙?+ 12鏉¤法绔犺妭鍏宠仈鏋勫缓鐨勭煡璇嗗浘璋?</div>
+<div class="kg-container">
+    <div class="kg-node" style="background:var(--blue-glow); border-color:var(--blue)">馃摝 浜屽弶鏍?/div>
+    <div class="kg-edge">鈫?鐗逛緥 鈫?/div>
+    <div class="kg-node">婊′簩鍙夋爲</div>
+    <div class="kg-edge">鈫?鐗逛緥 鈫?/div>
+    <div class="kg-node">瀹屽叏浜屽弶鏍?/div>
+</div>
+<div class="kg-container">
+    <div class="kg-node">閫掑綊</div>
+    <div class="kg-edge">鈫?搴旂敤 鈫?/div>
+    <div class="kg-node" style="background:var(--green-glow); border-color:var(--green)">鍓嶅簭閬嶅巻</div>
+    <div class="kg-edge">鈫?搴旂敤 鈫?/div>
+    <div class="kg-node" style="background:var(--green-glow); border-color:var(--green)">涓簭閬嶅巻</div>
+    <div class="kg-edge">鈫?搴旂敤 鈫?/div>
+    <div class="kg-node" style="background:var(--green-glow); border-color:var(--green)">鍚庡簭閬嶅巻</div>
+</div>
+<div class="kg-container">
+    <div class="kg-node" style="background:rgba(139,92,246,0.1); border-color:var(--purple)">浜屽弶鎼滅储鏍?/div>
+    <div class="kg-edge">鈫?鎿嶄綔 鈫?/div>
+    <div class="kg-node">BST鎻掑叆</div>
+    <div class="kg-edge">鈫?鎿嶄綔 鈫?/div>
+    <div class="kg-node">BST鍒犻櫎</div>
+    <div class="kg-edge">鈫?浼樺寲 鈫?/div>
+    <div class="kg-node" style="background:rgba(249,115,22,0.1); border-color:var(--orange)">AVL鏍?/div>
+</div>
+<div class="kg-container">
+    <div class="kg-node">骞宠　鍥犲瓙</div>
+    <div class="kg-edge">鈫?瑙﹀彂 鈫?/div>
+    <div class="kg-node">鏃嬭浆鎿嶄綔</div>
+    <div class="kg-edge">鈫?瀹炵幇 鈫?/div>
+    <div class="kg-node" style="background:rgba(249,115,22,0.1); border-color:var(--orange)">AVL鏍?/div>
+</div>
+<div style="text-align:center;padding:16px 0;color:var(--text3);font-size:11px">
+    ________<br>
+    14 涓蹇佃妭鐐?路 12 鏉″叧鑱旇竟 路 4 灞傜煡璇嗗眰绾?br>
+    绾㈣壊=鏍稿績姒傚康 路 钃濊壊=鍓嶇疆渚濊禆 路 缁胯壊=鏂规硶 路 绱壊=鏁版嵁缁撴瀯
+</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
