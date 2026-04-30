@@ -1,0 +1,16 @@
+# CourseMate 鈥?璇剧▼璧勬枡鏅鸿兘澶勭悊绠＄嚎 渚濊禆
+# 鏂囨。瑙ｆ瀽
+PyMuPDF>=1.23.0       # PDF瑙ｆ瀽
+python-pptx>=0.6.23   # PPT瑙ｆ瀽
+Pillow>=10.0.0        # 鍥剧墖澶勭悊
+
+# AI / Agent 妗嗘灦
+langchain>=0.1.0
+langchain-community>=0.1.0
+chromadb>=0.4.22      # 鍚戦噺鏁版嵁搴?
+# API瀹㈡埛绔?openai>=1.12.0        # DeepSeek API鍏煎
+
+# 宸ュ叿
+pyyaml>=6.0
+tqdm>=4.66.0
+rich>=13.7.0          # 缁堢缇庡寲杈撳嚭
