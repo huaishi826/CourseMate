@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+output/
+*.pdf
+*.pptx
+.venv/
+venv/
+Git-Installer.exe
+gh-installer.msi
